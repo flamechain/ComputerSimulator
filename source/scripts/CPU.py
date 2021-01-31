@@ -1,8 +1,13 @@
+'''
+File header to create a source function, not for the CPU, only for my code.
+'''
+
 import re, sys
 
 def replace(fileName: str, address: int, text: str) -> None:
     '''Function to edit files easier. NOT part of computer, just for my code'''
-    with open(fileName, 'r') as f:
+    path = sys.path[0]
+    with open(path + '/../bin/' + fileName, 'r') as f:
         lines = ''.join(f.readlines()).replace('\n', '').replace(' ', '')
 
     lines = re.findall('........', lines)
@@ -12,18 +17,18 @@ def replace(fileName: str, address: int, text: str) -> None:
         print('Address Error: Cant find address {0:b}'.format(address))
         sys.exit()
 
-    with open(fileName, 'w') as f:
+    with open(path + '/../bin/' + fileName, 'w') as f:
         f.write('\n'.join(lines))
 
 '''
-Handles basic CPU instructions
+Handles basic CPU instructions, and uses ALU
 '''
 
-from ALU import adder8bit, increment, bitwiseOp, subtract8bit, mult8bit, div8bit
+import ALU
 
 bit = 0 | 1
 byte = 8 * bit
-
+path = sys.path[0]
 def write(addr: str, data: byte, loc: str = 'RAM.bin') -> None:
     '''Writes to an address'''
     replace(loc, int(addr, 2), str(data))
@@ -72,8 +77,9 @@ ebx = '00000000'
 ecx = '00000000'
 edx = '00000000'
 
-def kernel(bootup: str) -> None:
+def kernel(bootup: str, os: path, ram: path, sector: path, eeprom: path, exc=False) -> None:
     '''Main function to handle hardcoded commands'''
+    path = sys.path[0]
     statement = [bootup[:4], bootup[8:24], bootup[24:40], bootup[40:56]]
     bootCom = True
     i = int(statement[1], 2)
@@ -81,7 +87,7 @@ def kernel(bootup: str) -> None:
     instruction = instruction_set[statement[0]]
     while i <= int(end, 2):
         if not bootCom:
-            with open('RAM.bin', 'r') as f:
+            with open(ram, 'r') as f:
                 data = ''.join(f.readlines()).replace(' ', '').replace('\n', '')
                 data = re.findall('........', data)
                 statement = ''.join(data[i:i+7])
@@ -90,18 +96,21 @@ def kernel(bootup: str) -> None:
                 instruction = instruction_set[statement[0]]
 
         if instruction == 'HLT':
-            command = input().replace(' ', '')
-            op = command[4:8]
-            statement = [command[:4], command[8:24], command[24:40], command[40:56]]
-            instruction = instruction_set[statement[0]]
+            if not bootCom:
+                command = input().replace(' ', '')
+                op = command[4:8]
+                statement = [command[:4], command[8:24], command[24:40], command[40:56]]
+                instruction = instruction_set[statement[0]]
+            else:
+                break
 
         if instruction == 'ADD':
-            with open('RAM.bin', 'r') as f:
+            with open(ram, 'r') as f:
                 data = ''.join(f.readlines()).replace(' ', '').replace('\n', '')
                 data = re.findall('........', data)
                 num1 = data[int(statement[1], 2)]
                 num2 = data[int(statement[2], 2)]
-            result = adder8bit(num1, num2)
+            result = ALU.adder8bit(num1, num2)
             write(statement[3], result)
 
         elif instruction == 'JUMP':
@@ -109,13 +118,13 @@ def kernel(bootup: str) -> None:
             continue
 
         elif instruction == 'GET':
-            with open('DISK/' + statement[1] + '.bin', 'r') as f:
+            with open(path + '/../bin/DISK/' + statement[1] + '.bin', 'r') as f:
                 data = ''.join(f.readlines()).replace(' ', '').replace('\n', '')
                 data = re.findall('........', data)
-            currentAddr = statement[3]
+            currentAddr = statement[2]
             for line in data:
                 write(currentAddr, line)
-                currentAddr = increment(currentAddr)
+                currentAddr = ALU.increment(currentAddr)
 
         elif instruction == 'LOAD':
             i = int(statement[1], 2)
@@ -127,7 +136,7 @@ def kernel(bootup: str) -> None:
             if statement[1][0] == '1':
                 value = registers[statement[1]]
             else:
-                with open('RAM.bin', 'r') as f:
+                with open(ram, 'r') as f:
                     data = ''.join(f.readlines()).replace(' ', '').replace('\n', '')
                     data = re.findall('........', data)
                     value = data[int(statement[1], 2)]
@@ -138,49 +147,49 @@ def kernel(bootup: str) -> None:
                 write(value2, value)
 
         elif instruction == 'BITWISE':
-            result = bitwiseOp(bitwise_set[op], statement[1], statement[2])
+            result = ALU.bitwiseOp(bitwise_set[op], statement[1], statement[2])
             write(statement[3], result)
 
         elif instruction == 'SET':
             write(statement[1], statement[2][:8])
 
         elif instruction == 'WRITE':
-            with open('RAM.bin', 'r') as f:
+            with open(ram, 'r') as f:
                 data = ''.join(f.readlines()).replace(' ', '').replace('\n', '')
                 data = re.findall('........', data)
                 data = data[int(statement[1], 2):int(statement[2], 2)]
-            with open('DISK/' + statement[3] + '.bin', 'w') as f:
+            with open(path + '/../bin/DISK/' + statement[3] + '.bin', 'w') as f:
                 f.write('\n'.join(data))
 
         elif instruction == 'SUB':
-            with open('RAM.bin', 'r') as f:
+            with open(ram, 'r') as f:
                 data = ''.join(f.readlines()).replace(' ', '').replace('\n', '')
                 data = re.findall('........', data)
                 num1 = data[int(statement[1], 2)]
                 num2 = data[int(statement[2], 2)]
-            result = subtract8bit(num1, num2)
+            result = ALU.subtract8bit(num1, num2)
             write(statement[3], result)
 
         elif instruction == 'MULT':
-            with open('RAM.bin', 'r') as f:
+            with open(ram, 'r') as f:
                 data = ''.join(f.readlines()).replace(' ', '').replace('\n', '')
                 data = re.findall('........', data)
                 num1 = data[int(statement[1], 2)]
                 num2 = data[int(statement[2], 2)]
-            result = mult8bit(num1, num2)
+            result = ALU.mult8bit(num1, num2)
             write(statement[3], result)
 
         elif instruction == 'DIV':
-            with open('RAM.bin', 'r') as f:
+            with open(ram, 'r') as f:
                 data = ''.join(f.readlines()).replace(' ', '').replace('\n', '')
                 data = re.findall('........', data)
                 num1 = data[int(statement[1], 2)]
                 num2 = data[int(statement[2], 2)]
-            result = div8bit(num1, num2)
+            result = ALU.div8bit(num1, num2)
             write(statement[3], result)
 
         elif instruction == 'JUMP IF':
-            with open('RAM.bin', 'r') as f:
+            with open(ram, 'r') as f:
                 data = ''.join(f.readlines()).replace(' ', '').replace('\n', '')
                 data = re.findall('........', data)
                 compare = ''.join(data[int(statement[1], 2):int(statement[1], 2)+7])
@@ -203,5 +212,7 @@ def kernel(bootup: str) -> None:
         i += 7
         bootCom = False
 
-    with open('RAM.bin', 'w') as f:
-        f.write('')
+    if not bootCom:
+        if not exc:
+            with open(ram, 'w') as f:
+                f.write('')
