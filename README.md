@@ -16,6 +16,7 @@ This is my repo for all of my computer simulators. What I mean, is that I made a
 Also my languages for ease of use: (Will Be Added Soon to GitHub)
 
 | Name | Use | Compiles To | Description |
-| MNL | User-friendly | ASM2, Python | Compiles to Python if you want to use this for real, and to ASM2 for MOS |
-| ASM2 | Step-up from binary | binary | Similary to assembly, but with custom binaries. Can only use for MOS |
+|-|-|-|-|
+| MNL | User-friendly | ASM2 | Used as a statically typed Python for actual coding. |
+| ASM2 | Step-up from binary | binary | Similary to assembly, but compiles to different binary |
 ||
