@@ -1,3 +1,0 @@
-:DEFAULT_PATH: = C:/Program*Files*(x86)/MNL/
-:INSTALLED: = true
-:INSTALL_DIR: = null
