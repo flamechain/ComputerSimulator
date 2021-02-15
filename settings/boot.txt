@@ -4,3 +4,4 @@ Boot Sector:  DISK/0000000000000000.bin
 OS Location:  EPROM.bin
 RAM Location: RAM.bin
 Additional:   EEPROM.bin
+GPU Address:  DISK/0000000000000001.bin

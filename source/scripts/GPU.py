@@ -1,9 +1,5 @@
-import pygame, threading, time
-from char_map1 import mapping
-
-pygame.init()
-
-screen = pygame.display.set_mode((1920, 1060), pygame.RESIZABLE)
+import pygame
+from source.scripts.char_map1 import mapping
 
 class Char:
     def __init__(self, x: int, y: int, char: str, screen: object):

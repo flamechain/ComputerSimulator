@@ -1,0 +1,15 @@
+# Code Owners
+
+# Core
+
+**/*.bin        @flamechain
+**/*.py         @flamechain
+
+# Testing
+
+test/logs       @flamechain
+test/unittest   @flamechain
+
+# Launcher
+
+COMPUTER.py     @flamechain

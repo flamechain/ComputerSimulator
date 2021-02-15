@@ -7,7 +7,16 @@ import re, sys
 def replace(fileName: str, address: int, text: str) -> None:
     '''Function to edit files easier. NOT part of computer, just for my code'''
     path = sys.path[0]
-    with open(path + '/../bin/' + fileName, 'r') as f:
+    if path[-1] == 'S':
+        s = '/source'
+        s2 = '/source/scripts'
+        s3 = ''
+    else:
+        s = '/..'
+        s2 = ''
+        s3 = '/../..'
+
+    with open(path + s + '/bin/' + fileName, 'r') as f:
         lines = ''.join(f.readlines()).replace('\n', '').replace(' ', '')
 
     lines = re.findall('........', lines)
@@ -17,14 +26,14 @@ def replace(fileName: str, address: int, text: str) -> None:
         print('Address Error: Cant find address {0:b}'.format(address))
         sys.exit()
 
-    with open(path + '/../bin/' + fileName, 'w') as f:
+    with open(path +  s + '/bin/' + fileName, 'w') as f:
         f.write('\n'.join(lines))
 
 '''
 Handles basic CPU instructions, and uses ALU
 '''
 
-import ALU
+import source.scripts.ALU as ALU
 
 bit = 0 | 1
 byte = 8 * bit
@@ -80,6 +89,15 @@ edx = '00000000'
 def kernel(bootup: str, os: path, ram: path, sector: path, eeprom: path, exc=False) -> None:
     '''Main function to handle hardcoded commands'''
     path = sys.path[0]
+    if path[-1] == 'S':
+        s = '/source'
+        s2 = '/source/scripts'
+        s3 = ''
+    else:
+        s = '/..'
+        s2 = ''
+        s3 = '/../..'
+
     statement = [bootup[:4], bootup[8:24], bootup[24:40], bootup[40:56]]
     bootCom = True
     i = int(statement[1], 2)
@@ -118,7 +136,7 @@ def kernel(bootup: str, os: path, ram: path, sector: path, eeprom: path, exc=Fal
             continue
 
         elif instruction == 'GET':
-            with open(path + '/../bin/DISK/' + statement[1] + '.bin', 'r') as f:
+            with open(path + s + '/bin/DISK/' + statement[1] + '.bin', 'r') as f:
                 data = ''.join(f.readlines()).replace(' ', '').replace('\n', '')
                 data = re.findall('........', data)
             currentAddr = statement[2]
@@ -158,7 +176,7 @@ def kernel(bootup: str, os: path, ram: path, sector: path, eeprom: path, exc=Fal
                 data = ''.join(f.readlines()).replace(' ', '').replace('\n', '')
                 data = re.findall('........', data)
                 data = data[int(statement[1], 2):int(statement[2], 2)]
-            with open(path + '/../bin/DISK/' + statement[3] + '.bin', 'w') as f:
+            with open(path + s + '/bin/DISK/' + statement[3] + '.bin', 'w') as f:
                 f.write('\n'.join(data))
 
         elif instruction == 'SUB':
